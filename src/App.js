@@ -51,11 +51,17 @@ function App() {
 
   const fetchChats = async () => {
     try {
-      const response = await fetch('https://devapi.beyondchats.com/api/get_all_chats?page=1');
-      const data = await response.json();
-      const chats = data.data.data;
+      const [page1Response, page2Response] = await Promise.all([
+        fetch('https://devapi.beyondchats.com/api/get_all_chats?page=1'),
+        fetch('https://devapi.beyondchats.com/api/get_all_chats?page=2')
+      ]);
 
-      const updatedChats = await Promise.all(chats.map(async (chat) => {
+      const page1Data = await page1Response.json();
+      const page2Data = await page2Response.json();
+
+      const allChats = [...page1Data.data.data, ...page2Data.data.data];
+
+      const updatedChats = await Promise.all(allChats.map(async (chat) => {
         const lastMessage = await fetchLastMessage(chat.id);
         return { ...chat, last_message: lastMessage };
       }));
